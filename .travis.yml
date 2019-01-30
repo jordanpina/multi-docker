@@ -1,0 +1,27 @@
+sudo: required
+services:
+  - docker
+
+# build test version
+# production version does not allow us to write any tests
+before_intall:
+  - docker build -t jordanpina/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run jordanpina/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t jordanpina/multi-client ./client
+  - docker build -t jordanpina/multi-nginx ./nginx
+  - docker build -t jordanpina/multi-server ./server
+  - docker build -t jordanpina/multi-worker ./worker
+  # Log into the docker CLI
+  # env variables are used so our credentials are not exposed
+  # echo DOCKER_PASSWORD retrives your password from travis ci env variables
+  # then the password is used as input for the second command after the pipe
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # take those images and push them to docker hub
+  - docker push jordanpina/multi-client
+  - docker push jordanpina/multi-nginx
+  - docker push jordanpina/multi-server
+  - docker push jordanpina/multi-worker
