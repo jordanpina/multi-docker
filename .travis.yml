@@ -4,9 +4,9 @@ services:
 
 # build test version
 # production version does not allow us to write any tests
-before_intall:
+before_install:
   - docker build -t jordanpina/react-test -f ./client/Dockerfile.dev ./client
-
+  
 script:
   - docker run jordanpina/react-test npm test -- --coverage
 
